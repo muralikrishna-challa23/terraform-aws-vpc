@@ -67,6 +67,11 @@ variable nat_gateway_tags {
     default = {}
 }
 
+variable "is_peering_reqired" {
+     type = bool
+     default = true
+}
+
 variable "peering_tags" {
     type = map
     default = {}

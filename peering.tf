@@ -1,5 +1,6 @@
 resource "aws_vpc_peering_connection" "default" {
-  peer_vpc_id   = data.aws_vpc.default.id
+  count = var.is_peering_reqired? 1 : 0
+  peer_vpc_id   = data.aws_vpc.default.id  # acceptor
   vpc_id        = aws_vpc.main.id
   auto_accept   = true
 
@@ -16,4 +17,19 @@ resource "aws_vpc_peering_connection" "default" {
               local.common_tags,
               {Name = "${local.common_name_suffix}-peering" }
   )
+}
+
+resource "aws_route" "public_peering" {
+  count = var.is_peering_reqired? 1 : 0
+  route_table_id            = aws_route_table.public.id
+  destination_cidr_block    = data.aws_vpc.default.cidr_block
+  vpc_peering_connection_id = aws_vpc_peering_connection.default[count.index].id
+}
+
+
+resource "aws_route" "default_peering" {
+  count = var.is_peering_reqired? 1 : 0
+  route_table_id            = data.aws_route_table.main.id
+  destination_cidr_block    = var.vpc_cidr
+  vpc_peering_connection_id = aws_vpc_peering_connection.default[count.index].id
 }
